@@ -1,0 +1,45 @@
+{
+  "name": "gif-ness-canvas",
+  "version": "0.0.1",
+  "description": "Ness-Canvas extension, Gif Generator",
+  "main": "lib/index.js",
+  "author": "DARK ECNELIS darkecnelis@gmail.com",
+  "license": "BSD 3-Clause",
+  "private": false,
+  "types": "./index.d.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "builder",
+    "canvas",
+    "canvasBuilder",
+    "ness",
+    "nessBuilder",
+    "graphic",
+    "graphics",
+    "image",
+    "images",
+    "filter",
+    "gif generator",
+    "gif"
+  ],
+  "dependencies": {
+    "gif-encoder-2": "^1.0.5",
+    "multi-integer-range": "^5.2.0",
+    "ndarray-pack": "^1.2.1",
+    "node-bitmap": "^0.0.1",
+    "omggif": "^1.0.10",
+    "parse-data-uri": "^0.2.0",
+    "pngjs": "^7.0.0",
+    "save-pixels": "^2.3.6"
+  },
+  "devDependencies": {
+    "@types/get-pixels": "^3.3.4",
+    "@types/mime-types": "^2.1.4",
+    "@types/omggif": "^1.0.5",
+    "@types/pngjs": "^6.0.4",
+    "@types/save-pixels": "^2.3.4",
+    "typescript": "^5.3.3"
+  }
+}
