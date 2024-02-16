@@ -1,6 +1,6 @@
 import { writeFileSync } from "fs";
 import { Canvas, Image } from "canvas";
-import { CanvasImage, CustomColor, Shape, ImagelocationOption, DrawlocationOption, FrameOption, ExpOption, FrameContent, TextOption, NessBuilder, FrameType, IntRange, ShapeLoad, Axis } from "ness-canvas";
+import { CanvasImage, CustomColor, Shape, ImagelocationOption, DrawlocationOption, FrameOption, ExpOption, TextOption, NessBuilder, FrameType, IntRange, ShapeLoad, Axis } from "ness-canvas";
 import { gifExtractor, progressBar } from "../function";
 import { ExpColor, LoadingOption } from "ness-canvas/Interfaces";
 
@@ -55,7 +55,7 @@ export default class GifBuilder {
    * @param size Frame size
    * @param options Frame configuration
    */
-  public setFrame<T extends FrameType, S extends Shape>(shape: S, frame: FrameOption<S>, options: FrameContent<T>): this {
+  public setFrame<T extends FrameType, S extends Shape>(shape: S, frame: FrameOption<S>, options: FrameContentGif<T>): this {
     this.framePlacement.push({id: 3, shape, frame, options})
     return this;
   };
@@ -231,4 +231,27 @@ export default class GifBuilder {
     return Buffer.from(await this.toBuffer()).toString('base64');
   };
   
+}
+
+interface FrameContentGif<T extends FrameType> {
+  /**
+   * Type of frame content to use
+   */
+  type: T;
+  /**
+   * Image, text or color to be placed in the frame
+   */
+  content: T extends "Image" ? CanvasImage | `${string}.gif` : T extends "Text" ? string | number : T extends "Color" ? CustomColor : "Empty";
+  /**
+   * Text configuration (not used if imageOrText is a CanvasImage)
+   */
+  textOptions?: T extends "Text" ? TextOption : never;
+  /**
+   * Frame line color (a degrade can be applied with [createRadialGradient | createLinearGradient] of canvas module)
+   */
+  color: CustomColor;
+  /**
+   * Frame line size
+   */
+  lineWidth?: number;
 }

@@ -1,12 +1,19 @@
 {
   "name": "gif-ness-canvas",
-  "version": "0.0.1",
+  "version": "1.0.0",
   "description": "Ness-Canvas extension, Gif Generator",
   "main": "lib/index.js",
   "author": "DARK ECNELIS darkecnelis@gmail.com",
   "license": "BSD 3-Clause",
   "private": false,
   "types": "./index.d.ts",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/DARK-ECNELIS/gif-ness-canvas.git"
+  },
+  "bugs": {
+    "url": "https://github.com/DARK-ECNELIS/gif-ness-canvas/issues"
+  },
   "keywords": [
     "builder",
     "canvas",
