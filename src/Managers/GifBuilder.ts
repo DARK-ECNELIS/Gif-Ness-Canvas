@@ -146,14 +146,9 @@ export default class GifBuilder {
 
     const builder = new NessBuilder(this.canvas.width, this.canvas.height);
 
-    const count = this.framePlacement.filter(function(obj) {
-      return obj.id === 8;
-    }).length;
-
     for (let i = 0; i < data.length; i++) {
+      let x = 0, y = 0, z = 0;   
 
-      let x = 0, y = 0, z = 0;      
-      
       for (const e of this.framePlacement) {
         switch (e.id) {
           case 0: {
@@ -208,12 +203,10 @@ export default class GifBuilder {
           };
           case 8: {
             builder.setAxis(e.axis)
-            x++
             break;
           };
         };
       };
-      
       progressBar(i +1, data.length, "\x1b[34mGif builder: \x1b[33m")
       await encoder.addFrame(builder.context);
     };

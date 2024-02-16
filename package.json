@@ -25,7 +25,7 @@
     "gif-encoder-2": "^1.0.5",
     "multi-integer-range": "^5.2.0",
     "ndarray-pack": "^1.2.1",
-    "ness-canvas": "^2.4.1",
+    "ness-canvas": "^2.4.2",
     "node-bitmap": "^0.0.1",
     "omggif": "^1.0.10",
     "parse-data-uri": "^0.2.0",
