@@ -42,6 +42,7 @@
   "devDependencies": {
     "@types/get-pixels": "^3.3.4",
     "@types/mime-types": "^2.1.4",
+    "@types/node": "^20.19.13",
     "@types/omggif": "^1.0.5",
     "@types/pngjs": "^6.0.5",
     "@types/save-pixels": "^2.3.4",
