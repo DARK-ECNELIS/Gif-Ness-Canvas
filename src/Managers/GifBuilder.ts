@@ -1,8 +1,8 @@
 import { writeFileSync } from "fs";
 import { Canvas, Image } from "canvas";
-import { CanvasImage, CustomColor, Shape, ImagelocationOption, DrawlocationOption, FrameOption, ExpOption, TextOption, NessBuilder, FrameType, IntRange, ShapeLoad, Axis } from "ness-canvas";
+import { CanvasImage, CustomColor, Shape, ImagelocationOption, DrawlocationOption, NessBuilder, FrameType, IntRange, ShapeLoad, Axis, Frame, ExperienceColor, Experience, Loading, Banner, Content } from "ness-canvas";
 import { gifExtractor, progressBar } from "../function";
-import { ExpColor, LoadingOption } from "ness-canvas/Interfaces";
+import { algorithm, EncoderOptions, quality, threshold } from "..";
 
 const GIFEncoder = require('gif-encoder-2')
 
@@ -12,6 +12,13 @@ export default class GifBuilder {
   // protected declare context: CanvasRenderingContext2D;
 
   private framePlacement = [];
+  private algorithm: algorithm;
+  private optimizer: boolean;
+  private quality: quality;
+  private threshold: threshold;
+  private repeat: number = 0;
+  private frameRate: number = null;
+  private transparentColor = null;
   
   constructor (width, height) {
     this.canvas = new Canvas(width, height)
@@ -55,8 +62,8 @@ export default class GifBuilder {
    * @param size Frame size
    * @param options Frame configuration
    */
-  public setFrame<T extends FrameType, S extends Shape>(shape: S, frame: FrameOption<S>, options: FrameContentGif<T>): this {
-    this.framePlacement.push({id: 3, shape, frame, options})
+  public setFrame<T extends FrameType, S extends Shape>(shape: S, frame: Frame<S>, content: ContentGif<T>): this {
+    this.framePlacement.push({id: 3, shape, frame, content})
     return this;
   };
 
@@ -66,37 +73,62 @@ export default class GifBuilder {
    * @param coordinate Text location
    * @param option Text option
    */
-  public setText(text: string, coordinate: {x: number, y: number}, option: TextOption): this {
+  public setText(text: string, coordinate: {x: number, y: number}, option: Text): this {
     this.framePlacement.push({id: 4, text, coordinate, option})
     return this;
   };
   
   /**
-   * Set progress bar
-   * @param location Coordinate to set ExpBar
-   * @param size Size of the first progression bar
-   * @param radius Radius to set
-   * @param cloneWidth Size of the second progression bar
-   * @param color Text color (a degrade can be applied with <createRadialGradient | createLinearGradient] of the Canvas module), White color is used by Default
+   * Change font to use
+   * 
+   * @param name System font name
+   * @param size Font size
    */
-  public setExp(option: ExpOption, progress: IntRange<0, 101>, color?: ExpColor): this {
-    this.framePlacement.push({id: 5, option, progress, color})
-    return this;
-  };
-
   public setFont(name: string, size?: number): this {
 
-    this.framePlacement.push({id: 6, name, size})
+    this.framePlacement.push({id: 5, name, size})
     return this;
   };
   
-  public setLoading<D extends ShapeLoad, S extends Shape>(shape: Shape, option: LoadingOption<D, S>): this {
+  /**
+   * Set progress bar
+   *
+   * @param location Coordinate to set ExpBar
+   * @param size Size of the first progression bar
+   * @param radius Radius to set
+   * @param progress Progression of the second progression bar 0 - 100%
+   * @param color Text color. White color is used by Default
+   */
+  public setExp(option: Experience, progress: IntRange<0, 101>, color?: ExperienceColor): this {
+    this.framePlacement.push({id: 6, option, progress, color})
+    return this;
+  };
+  
+  public setLoading<D extends ShapeLoad, S extends Shape>(shape: Shape, option: Loading<S, D>): this {
     this.framePlacement.push({id: 7, shape, option})
     return this;
   };
 
   public setAxis(axis: Axis): this {
     this.framePlacement.push({id: 8, axis})
+    return this;
+  };
+
+  public setBanner<T extends FrameType>(banner: Banner, content: ContentGif<T>): this {
+    this.framePlacement.push({id: 9, banner, content})
+    return this;
+  };
+
+  public setEncoder<algo extends algorithm, bool extends boolean>(option: EncoderOptions<algo, bool>): this {
+    const { algorithm, optimizer, repeat, quality, threshold, frameRate, transparentColor } = option;
+
+    this.algorithm = algorithm
+    if (quality) this.quality = quality;
+    if (optimizer) this.optimizer = optimizer, this.threshold = threshold;
+    if (repeat) this.repeat = repeat;
+    if (frameRate) this.frameRate = frameRate;
+    if (transparentColor) this.transparentColor = parseInt(transparentColor.slice(1), 16);
+    
     return this;
   }
 
@@ -105,28 +137,32 @@ export default class GifBuilder {
    */
   public async toBuffer() {
 
-    const data = {setImage: [], setBackground: [], setFrame: [], length: 0};
-    const encoder = new GIFEncoder(this.canvas.width, this.canvas.height, 'neuquant', true);
-    // const encoder = new GIFEncoder(this.canvas.width, this.canvas.height, 'octree', true);
+    const data = {setImage: [], setBackground: [], setFrame: [], setBanner: [], length: 0};
+    const encoder = new GIFEncoder(this.canvas.width, this.canvas.height, this.algorithm, this.optimizer);
     
-    encoder.setTransparent(false)
+    if (this.quality) encoder.setQuality(this.quality);
+    if (this.optimizer) encoder.setThreshold(this.threshold);
+    if (this.frameRate !== null) encoder.setFrameRate(this.frameRate);
+    if (this.transparentColor !== null) encoder.setTransparent(this.transparentColor);
+
+    encoder.setRepeat(this.repeat);
+
     encoder.start();
 
     for (let e of this.framePlacement) {
 
       let imageData: Array<Image>;
 
-      // if ([0].includes(e.id)) continue
-      if (!e.image && !e.options?.content && !e.imageColor) continue;
-      if (/.gif$/.test(e.image || e.options?.content || e.imageColor)) {
-        imageData = await gifExtractor(e.image || e.options?.content || e.imageColor)
-      } else if (e.imageColor && typeof e.imageColor !== "object") {
+      if (!e.image && !e.content?.content && !e.imageColor) continue;
+      if (/.gif$/.test(e.image || e.content?.content || e.imageColor)) {
+        imageData = await gifExtractor(e.image || e.content?.content || e.imageColor)
+      } else if ((e.imageColor && typeof e.imageColor !== "object") || (e.content?.content && typeof e.content?.content !== "object")) {
         continue;
       } else {
-        imageData = e.image || e.options?.content || e.imageColor
+        imageData = e.image || e.content?.content || e.imageColor
       };
 
-      data.length < imageData.length && data.length !== 0 && typeof data == "object" && (typeof e.image?.length !== undefined || typeof e.imageColor?.length !== undefined || typeof e.options?.content?.length !== 'undefined')? "" : data.length = imageData.length;
+      if (data.length < imageData.length || data.length == 0 && imageData.length !== undefined) data.length = imageData.length;
 
       switch (e.id) {
         case 1: {
@@ -141,13 +177,17 @@ export default class GifBuilder {
           data.setFrame.push(imageData);
           break;
         };
+        case 9: {
+          data.setBanner.push(imageData);
+          break;
+        };
       };
     };
-
+    
     const builder = new NessBuilder(this.canvas.width, this.canvas.height);
-
-    for (let i = 0; i < data.length; i++) {
-      let x = 0, y = 0, z = 0;   
+    
+    for (let i = 0, w = 0, x = 0, y = 0, z = 0; i < data.length; i++, w++, x++, y++, z++) {
+      let X = 0, Y = 0, Z = 0;
 
       for (const e of this.framePlacement) {
         switch (e.id) {
@@ -156,33 +196,39 @@ export default class GifBuilder {
             break;
           };
           case 1: {
-            if (!data.setBackground[0].complete && !data.setBackground[0][i]) {
+            if (typeof e.imageColor == "string") {
               builder.setBackground(e.imageColor);
             } else if (!data.setBackground[0].complete) {
-              builder.setBackground(data.setBackground[0][i]);
+              if (w == data.setBackground[0].length) w = 0;
+              builder.setBackground(data.setBackground[0][w]);
             } else {
               builder.setBackground(data.setBackground[0]);
             };
             break;
           };
           case 2: {
-            if (!data.setImage[y].complete) {
-              builder.setImage(data.setImage[y][i], e.imageOption, e.locationOption);
+            if (!data.setImage[Y].complete) {
+              if (y == data.setImage[Y].length) y = 0;
+              builder.setImage(data.setImage[Y][y], e.imageOption, e.locationOption);
             } else {
-              builder.setImage(data.setImage[y], e.imageOption, e.locationOption);
+              builder.setImage(data.setImage[Y], e.imageOption, e.locationOption);
             };
-            y++;
+            Y++;
             break;
           };
           case 3: {
-            if (!data.setFrame[z].complete) {
-              e.options.content = data.setFrame[z][i];
-              builder.setFrame(e.shape, e.frame, e.options);
+            if (e.content.type == "Empty" || e.content.type == "Color" || e.content.type == "Text") {
+              builder.setFrame(e.shape, e.frame, e.content);
+              break
+            } else if (!data.setFrame[Z].complete) {
+              if (z == data.setFrame[Z].length) z = 0;
+              e.content.content = data.setFrame[Z][z];
+              builder.setFrame(e.shape, e.frame, e.content);
             } else {
-              e.options.content = data.setFrame[z];
-              builder.setFrame(e.shape, e.frame, e.options);
+              e.content.content = data.setFrame[Z];
+              builder.setFrame(e.shape, e.frame, e.content);
             };
-            z++;
+            Z++;
             break;
           };
           case 4: {
@@ -190,11 +236,11 @@ export default class GifBuilder {
             break;
           };
           case 5: {
-            builder.setExp(e.option, e.progress, e.color)
+            builder.setFont(e.name, e.size)
             break;
           };
           case 6: {
-            builder.setFont(e.name, e.size)
+            builder.setExp(e.option, e.progress, e.color)
             break;
           };
           case 7: {
@@ -203,6 +249,21 @@ export default class GifBuilder {
           };
           case 8: {
             builder.setAxis(e.axis)
+            break;
+          };
+          case 9: {
+            if (e.content.type == "Empty" || e.content.type == "Color" || e.content.type == "Text") {
+              builder.setBanner(e.banner, e.content);
+              break
+            } else if (!data.setBanner[X].complete) {
+              if (x == data.setBanner[X].length) x = 0;
+              e.content.content = data.setBanner[X][x];
+              builder.setBanner(e.banner, e.content);
+            } else {
+              e.content.content = data.setBanner[X];
+              builder.setBanner(e.banner, e.content);
+            };
+            X++;
             break;
           };
         };
@@ -220,38 +281,32 @@ export default class GifBuilder {
    * @param location Image Generation Path
    * @param name Image name
    */
-  public async generatedTo(location: string, name: string) {
-    writeFileSync(`${location}/${name}.gif`, await this.toBuffer());
+  public async generatedTo(path: string, name: string) {
+    writeFileSync(`${path}/${name}.gif`, await this.toBuffer());
   };
 
   /**
    * Returns a base64 encoded string
    */
-  public async toDataURL() {
+  public async toDataURL(): Promise<string> {
     return Buffer.from(await this.toBuffer()).toString('base64');
   };
   
 }
 
-interface FrameContentGif<T extends FrameType> {
+interface ContentGif<T extends FrameType> {
   /**
    * Type of frame content to use
    */
   type: T;
-  /**
-   * Image, text or color to be placed in the frame
-   */
+   /**
+    * Image, text or color to place in the frame
+    * 
+    * Color: colorName | #hex(a) | rgb(a) | CanvasGradient | CanvasPattern
+    */
   content: T extends "Image" ? CanvasImage | `${string}.gif` : T extends "Text" ? string | number : T extends "Color" ? CustomColor : "Empty";
   /**
    * Text configuration (not used if imageOrText is a CanvasImage)
    */
-  textOptions?: T extends "Text" ? TextOption : never;
-  /**
-   * Frame line color (a degrade can be applied with [createRadialGradient | createLinearGradient] of canvas module)
-   */
-  color: CustomColor;
-  /**
-   * Frame line size
-   */
-  lineWidth?: number;
+  text?: T extends "Text" ? Text : never;
 }

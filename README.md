@@ -1,15 +1,17 @@
-# GifBuilder
+# GifBuilder 1.4.0
 
 <div align="center">
   <br/>
   <p>
-    <a href="https://discord.gg/sjABtBmTWa"><img src="https://dcbadge.vercel.app/api/server/sjABtBmTWa?style=plastic&theme=discord-inverted&compact=true" alt="discord server" />
-    </a>
+    <a href="https://discord.gg/sjABtBmTWa"><h1>Join Discord</h1></a>
   </p>
   <p>
-    <a href="https://www.npmjs.com/package/ness-canvas"><img src="https://badge.fury.io/js/gif-ness-canvas.png" alt="npm version" height=18 />
+    <a href="https://discord.gg/sjABtBmTWa">
+      <img alt="Discord" src="https://img.shields.io/discord/726208970489987152?style=plastic&logo=discord&label=Discord&color=%239400D3&link=https%3A%2F%2Fdiscord.gg%2FsjABtBmTWa">
     </a>
-    <a href="https://www.npmjs.com/package/ness-canvas"><img src="https://img.shields.io/npm/dt/gif-ness-canvas.png" alt="npm download" height=18 />
+    <a href="https://www.npmjs.com/package/gif-ness-canvas"><img src="https://badge.fury.io/js/gif-ness-canvas.png" alt="npm version" height=18 />
+    </a>
+    <a href="https://www.npmjs.com/package/gif-ness-canvas"><img src="https://img.shields.io/npm/dt/gif-ness-canvas.png" alt="npm download" height=18 />
     </a>
   </p>
 </div>

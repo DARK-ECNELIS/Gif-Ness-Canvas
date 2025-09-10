@@ -37,7 +37,9 @@ function handleJPEG(data: jpeg.BufferLike, cb: (arg0: Error, arg1?: ndarray.NdAr
     return
   }
   const nshape = [jpegData.height, jpegData.width, 4]
-  const result = ndarray(jpegData.data, nshape)
+  // 🔑 conversion explicite Buffer -> Uint8Array
+  const array = new Uint8Array(jpegData.data);
+  const result = ndarray(array, nshape)
   cb(null, result.transpose(1, 0))
 }
 
